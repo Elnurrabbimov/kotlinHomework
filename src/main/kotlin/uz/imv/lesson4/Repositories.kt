@@ -15,4 +15,22 @@ interface UserRepository : JpaRepository<User, Long> {
     fun customNativeQuery(username: String): User?
 }
 
-interface ProfileRepository : JpaRepository<Profile, Int> {}
+interface CategoryRepository : JpaRepository<Category, Long> {
+    // Add any additional query methods if needed
+}
+
+interface ProductRepository : JpaRepository<Product, Long> {
+    // Add any additional query methods if needed
+}
+
+interface TransactionRepository : JpaRepository<Transaction, Long> {
+    // Add any additional query methods if needed
+}
+
+interface TransactionItemRepository : JpaRepository<TransactionItem, Long> {
+    // Add any additional query methods if needed
+}
+
+interface UserPaymentTransactionRepository : JpaRepository<UserPaymentTransaction, Long> {
+    // Add any additional query methods if needed
+}
