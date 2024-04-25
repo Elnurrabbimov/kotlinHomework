@@ -95,7 +95,7 @@ class CategoryServiceImpl(
     }
 
     override fun getAllCategories(pageable: Pageable): Page<CategoryDto> {
-        TODO("Not yet implemented")
+        return repository.findAll(pageable).map(CategoryDto.Companion::toDto)
     }
 }
 

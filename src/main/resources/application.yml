@@ -14,4 +14,4 @@ spring:
       ddl-auto: update
 
 server:
-  port: 3040
+  port: 8080
