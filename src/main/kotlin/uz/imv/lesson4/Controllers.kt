@@ -14,6 +14,11 @@ class ControllerAdvice {
             .body(BaseMessage(0, "User already exists  wiht ${e.userName}"))
     }
 
+    @ExceptionHandler(DataNotFoundException::class)
+    fun handlerDataNotFound(e: DataNotFoundException): ResponseEntity<*> {
+        return ResponseEntity.badRequest()
+            .body(BaseMessage(0, "Data not found in defined table : ${e.table}"))
+    }
 
 }
 
@@ -47,6 +52,12 @@ class CategoryController(private val categoryService: CategoryService) {
         return ResponseEntity.ok(createdCategory)
     }
 
+    @GetMapping("{id}")
+    fun getCategoryById(@PathVariable id: Long): ResponseEntity<CategoryDto> {
+        val category = categoryService.getCategoryById(id)
+        return ResponseEntity.ok(category)
+    }
+
     @PutMapping("{id}")
     fun updateCategory(@PathVariable id: Long, @RequestBody dto: CategoryDto): ResponseEntity<CategoryDto> {
         val updatedCategory = categoryService.updateCategory(id, dto)
@@ -57,12 +68,6 @@ class CategoryController(private val categoryService: CategoryService) {
     fun deleteCategory(@PathVariable id: Long): ResponseEntity<Unit> {
         categoryService.deleteCategory(id)
         return ResponseEntity.noContent().build()
-    }
-
-    @GetMapping("{id}")
-    fun getCategoryById(@PathVariable id: Long): ResponseEntity<CategoryDto> {
-        val category = categoryService.getCategoryById(id)
-        return ResponseEntity.ok(category)
     }
 
     @GetMapping

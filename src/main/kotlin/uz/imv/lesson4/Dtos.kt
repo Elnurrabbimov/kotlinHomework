@@ -37,7 +37,7 @@ data class GetUserDto(
 data class CategoryDto(
     val id: Int,
     val name: String,
-    val order: Long,
+    val c_order: Long,
     val description: String
 ) {
     companion object {

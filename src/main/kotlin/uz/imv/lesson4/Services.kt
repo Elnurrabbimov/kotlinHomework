@@ -83,15 +83,31 @@ class CategoryServiceImpl(
     }
 
     override fun updateCategory(id: Long, dto: CategoryDto): CategoryDto {
-        TODO("Not yet implemented")
+        val category = repository.findByIdOrNull(id) ?: throw DataNotFoundException("category")
+
+        dto.c_order.let {
+            category.c_order = it
+        }
+
+        dto.description.let {
+            category.description = it
+        }
+
+        dto.name.let {
+            category.name = it
+        }
+
+        repository.save(category)
+        return CategoryDto.toDto(category)
     }
 
     override fun deleteCategory(id: Long) {
-        TODO("Not yet implemented")
+        repository.deleteById(id)
     }
 
     override fun getCategoryById(id: Long): CategoryDto {
-        TODO("Not yet implemented")
+        val category = repository.findByIdOrNull(id) ?: throw DataNotFoundException("category")
+        return CategoryDto.toDto(category)
     }
 
     override fun getAllCategories(pageable: Pageable): Page<CategoryDto> {
