@@ -1,9 +1,13 @@
 package uz.imv.lesson4
 
+import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import java.sql.Timestamp
+import java.text.DateFormat
+import java.time.LocalDateTime
 
 interface UserService {
     fun createUser(dto: UserCreateDto): GetUserDto
@@ -13,14 +17,13 @@ interface UserService {
     fun getAllUsers(pageable: Pageable): Page<GetUserDto>
 }
 
-
 @Service
 class UserServiceImpl(
     private val repository: UserRepository
 ) : UserService {
     override fun createUser(dto: UserCreateDto): GetUserDto {
-        if (repository.existsByUsername(dto.username))
-            throw UserAlreadyExistsException(dto.username)
+        if (repository.existsByUsername(dto.username)) throw UserAlreadyExistsException(dto.username)
+
         val user = repository.save(dto.toEntity())
         return GetUserDto.toDto(user)
     }
@@ -29,8 +32,7 @@ class UserServiceImpl(
         val user = repository.findByIdOrNull(id) ?: throw UserNotFoundException()
 
         dto.username?.let {
-            if (user.username != it && repository.existsByUsername(dto.username))
-                throw UserAlreadyExistsException(dto.username)
+            if (user.username != it && repository.existsByUsername(dto.username)) throw UserAlreadyExistsException(dto.username)
             user.username = it
         }
 
@@ -42,8 +44,8 @@ class UserServiceImpl(
             user.banalce = it
         }
 
-        dto.fullName?.let {
-            user.fullName = it
+        dto.fullname?.let {
+            user.fullame = it
         }
 
         repository.save(user)
@@ -66,8 +68,8 @@ class UserServiceImpl(
 
 
 interface CategoryService {
-    fun createCategory(dto: CategoryDto): CategoryDto
-    fun updateCategory(id: Long, dto: CategoryDto): CategoryDto
+    fun createCategory(dto: CategoryCreateDto): CategoryDto
+    fun updateCategory(id: Long, dto: CategoryUpdateDto): CategoryDto
     fun deleteCategory(id: Long)
     fun getCategoryById(id: Long): CategoryDto
     fun getAllCategories(pageable: Pageable): Page<CategoryDto>
@@ -77,23 +79,23 @@ interface CategoryService {
 class CategoryServiceImpl(
     private val repository: CategoryRepository
 ) : CategoryService {
-    // Implement methods similar to UserServiceImpl
-    override fun createCategory(dto: CategoryDto): CategoryDto {
-        TODO("Not yet implemented")
+    override fun createCategory(dto: CategoryCreateDto): CategoryDto {
+        val category = repository.save(dto.toEntity())
+        return CategoryDto.toDto(category)
     }
 
-    override fun updateCategory(id: Long, dto: CategoryDto): CategoryDto {
+    override fun updateCategory(id: Long, dto: CategoryUpdateDto): CategoryDto {
         val category = repository.findByIdOrNull(id) ?: throw DataNotFoundException("category")
 
-        dto.c_order.let {
+        dto.c_order?.let {
             category.c_order = it
         }
 
-        dto.description.let {
+        dto.description?.let {
             category.description = it
         }
 
-        dto.name.let {
+        dto.name?.let {
             category.name = it
         }
 
@@ -116,8 +118,8 @@ class CategoryServiceImpl(
 }
 
 interface ProductService {
-    fun createProduct(dto: ProductDto): ProductDto
-    fun updateProduct(id: Long, dto: ProductDto): ProductDto
+    fun createProduct(dto: ProductCreateDto): ProductDto
+    fun updateProduct(id: Long, dto: ProductUpdateDto): ProductDto
     fun deleteProduct(id: Long)
     fun getProductById(id: Long): ProductDto
     fun getAllProducts(pageable: Pageable): Page<ProductDto>
@@ -125,128 +127,157 @@ interface ProductService {
 
 @Service
 class ProductServiceImpl(
-    private val repository: ProductRepository
+    private val repository: ProductRepository,
+    private val categoryRepository: CategoryRepository
 ) : ProductService {
-    // Implement methods similar to UserServiceImpl
-    override fun createProduct(dto: ProductDto): ProductDto {
-        TODO("Not yet implemented")
+    override fun createProduct(dto: ProductCreateDto): ProductDto {
+        val category =
+            categoryRepository.findByIdOrNull((dto.categoryId).toLong()) ?: throw DataNotFoundException("category")
+        val product = repository.save(dto.toEntity(category))
+        return ProductDto.toDto(product)
     }
 
-    override fun updateProduct(id: Long, dto: ProductDto): ProductDto {
-        TODO("Not yet implemented")
+    override fun updateProduct(id: Long, dto: ProductUpdateDto): ProductDto {
+        val product = repository.findByIdOrNull(id) ?: throw DataNotFoundException("product")
+
+        dto.count?.let {
+            product.count = it
+        }
+
+        dto.name?.let {
+            product.name = it
+        }
+
+        dto.categoryId?.let {
+            val category = categoryRepository.findByIdOrNull((dto.categoryId).toLong())
+            if (category != null)
+                product.category = category
+        }
+
+        repository.save(product)
+        return ProductDto.toDto(product)
     }
 
     override fun deleteProduct(id: Long) {
-        TODO("Not yet implemented")
+        repository.deleteById(id)
     }
 
     override fun getProductById(id: Long): ProductDto {
-        TODO("Not yet implemented")
+        val product = repository.findByIdOrNull(id) ?: throw DataNotFoundException("product")
+        return ProductDto.toDto(product)
     }
 
     override fun getAllProducts(pageable: Pageable): Page<ProductDto> {
-        TODO("Not yet implemented")
+        return repository.findAll(pageable).map(ProductDto.Companion::toDto)
     }
 }
 
-interface TransactionService {
-    fun createTransaction(dto: TransactionDto): TransactionDto
-    fun updateTransaction(id: Long, dto: TransactionDto): TransactionDto
-    fun deleteTransaction(id: Long)
-    fun getTransactionById(id: Long): TransactionDto
-    fun getAllTransactions(pageable: Pageable): Page<TransactionDto>
-}
-
-@Service
-class TransactionServiceImpl(
-    private val repository: TransactionRepository
-) : TransactionService {
-    // Implement methods similar to UserServiceImpl
-    override fun createTransaction(dto: TransactionDto): TransactionDto {
-        TODO("Not yet implemented")
-    }
-
-    override fun updateTransaction(id: Long, dto: TransactionDto): TransactionDto {
-        TODO("Not yet implemented")
-    }
-
-    override fun deleteTransaction(id: Long) {
-        TODO("Not yet implemented")
-    }
-
-    override fun getTransactionById(id: Long): TransactionDto {
-        TODO("Not yet implemented")
-    }
-
-    override fun getAllTransactions(pageable: Pageable): Page<TransactionDto> {
-        TODO("Not yet implemented")
-    }
-}
-
-interface TransactionItemService {
-    fun createTransactionItem(dto: TransactionItemDto): TransactionItemDto
-    fun updateTransactionItem(id: Long, dto: TransactionItemDto): TransactionItemDto
-    fun deleteTransactionItem(id: Long)
-    fun getTransactionItemById(id: Long): TransactionItemDto
-    fun getAllTransactionItems(pageable: Pageable): Page<TransactionItemDto>
-}
-
-@Service
-class TransactionItemServiceImpl(
-    private val repository: TransactionItemRepository
-) : TransactionItemService {
-    // Implement methods similar to UserServiceImpl
-    override fun createTransactionItem(dto: TransactionItemDto): TransactionItemDto {
-        TODO("Not yet implemented")
-    }
-
-    override fun updateTransactionItem(id: Long, dto: TransactionItemDto): TransactionItemDto {
-        TODO("Not yet implemented")
-    }
-
-    override fun deleteTransactionItem(id: Long) {
-        TODO("Not yet implemented")
-    }
-
-    override fun getTransactionItemById(id: Long): TransactionItemDto {
-        TODO("Not yet implemented")
-    }
-
-    override fun getAllTransactionItems(pageable: Pageable): Page<TransactionItemDto> {
-        TODO("Not yet implemented")
-    }
-}
 
 interface UserPaymentTransactionService {
-    fun createUserPaymentTransaction(dto: UserPaymentTransactionDto): UserPaymentTransactionDto
-    fun updateUserPaymentTransaction(id: Long, dto: UserPaymentTransactionDto): UserPaymentTransactionDto
-    fun deleteUserPaymentTransaction(id: Long)
-    fun getUserPaymentTransactionById(id: Long): UserPaymentTransactionDto
+    fun createUserPaymentTransaction(dto: UserPaymentTransactionCreateDto): UserPaymentTransactionDto
     fun getAllUserPaymentTransactions(pageable: Pageable): Page<UserPaymentTransactionDto>
 }
 
 @Service
 class UserPaymentTransactionServiceImpl(
-    private val repository: UserPaymentTransactionRepository
+    private val repository: UserPaymentTransactionRepository,
+    private val userRepository: UserRepository,
 ) : UserPaymentTransactionService {
-    // Implement methods similar to UserServiceImpl
-    override fun createUserPaymentTransaction(dto: UserPaymentTransactionDto): UserPaymentTransactionDto {
-        TODO("Not yet implemented")
-    }
 
-    override fun updateUserPaymentTransaction(id: Long, dto: UserPaymentTransactionDto): UserPaymentTransactionDto {
-        TODO("Not yet implemented")
-    }
+    @Transactional
+    override fun createUserPaymentTransaction(dto: UserPaymentTransactionCreateDto): UserPaymentTransactionDto {
+        val user = userRepository.findByIdOrNull(dto.userId.toLong()) ?: throw DataNotFoundException("user")
 
-    override fun deleteUserPaymentTransaction(id: Long) {
-        TODO("Not yet implemented")
-    }
+        // updates user balance
+        dto.let {
+            user.banalce += it.amount
+        }
+        userRepository.save(user)
+        // updates user balance
 
-    override fun getUserPaymentTransactionById(id: Long): UserPaymentTransactionDto {
-        TODO("Not yet implemented")
+        val userPaymentTransaction = repository.save(dto.toEntity(user))
+        return UserPaymentTransactionDto.toDto(userPaymentTransaction)
     }
 
     override fun getAllUserPaymentTransactions(pageable: Pageable): Page<UserPaymentTransactionDto> {
-        TODO("Not yet implemented")
+        return repository.findAll(pageable).map(UserPaymentTransactionDto.Companion::toDto)
     }
+}
+
+interface TransactionItemService {
+    fun getTransactionByUserId(userId: Long): List<TransactionItemDto>
+}
+
+@Service
+class TransactionItemServiceImpl(private val repository: TransactionItemRepository) :
+    TransactionItemService {
+
+    override fun getTransactionByUserId(userId: Long): List<TransactionItemDto> {
+        val data = repository.findAllByIdUserId(userId)
+        return data.map { TransactionItemDto.toDto(it) }
+    }
+
+}
+
+interface TransactionService {
+    fun createProductTransaction(dto: TransactionCreateDto): TransactionDto
+}
+
+@Service
+class TransactionServiceImpl(
+    private val repository: TransactionRepository,
+    private val userRepository: UserRepository,
+    private val productRepository: ProductRepository,
+    private val transactionItemRepository: TransactionItemRepository
+) : TransactionService {
+
+    @Transactional
+    override fun createProductTransaction(dto: TransactionCreateDto): TransactionDto {
+        val user = userRepository.findByIdOrNull(dto.userId.toLong()) ?: throw DataNotFoundException("user")
+
+        var total_amount = 0.0.toBigDecimal()
+
+        var transaction = repository.save(dto.toEntity(user, total_amount, LocalDateTime.now()))
+
+        for (product in dto.products) {
+            val productEntity =
+                productRepository.findByIdOrNull(product.productId.toLong()) ?: throw DataNotFoundException("product")
+
+            if (productEntity.count - product.count > 0) {
+                var total_amount_item = product.amount.multiply(product.count.toBigDecimal())
+                total_amount += total_amount_item
+
+                product.count.let {
+                    productEntity.count -= it
+                }
+                productRepository.save(productEntity)
+
+                var transactionItem = TransactionItemCreateDto(product.productId, product.count, product.amount)
+                transactionItemRepository.save(transactionItem.toEntity(productEntity, transaction, total_amount_item))
+            } else {
+                throw NotEnoughProductException(productEntity)
+            }
+        }
+
+
+        total_amount.let {
+            transaction.total_amount = it
+        }
+
+        if (user.banalce - total_amount < 0.toBigDecimal())
+            throw NotEnoughMoneyException(user)
+        else {
+            total_amount.let {
+                user.banalce -= it
+            }
+
+            userRepository.save(user)
+        }
+
+
+        transaction = repository.save(transaction)
+
+        return TransactionDto.toDto(transaction)
+    }
+
 }

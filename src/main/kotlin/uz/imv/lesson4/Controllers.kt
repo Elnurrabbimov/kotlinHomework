@@ -20,6 +20,23 @@ class ControllerAdvice {
             .body(BaseMessage(0, "Data not found in defined table : ${e.table}"))
     }
 
+    @ExceptionHandler(NotEnoughProductException::class)
+    fun handlerNotEnoughProduct(e: NotEnoughProductException): ResponseEntity<*> {
+        return ResponseEntity.badRequest()
+            .body(
+                BaseMessage(
+                    0,
+                    "Not enough product in store: Product -  ${e.product.name}, Count - ${e.product.count}"
+                )
+            )
+    }
+
+    @ExceptionHandler(NotEnoughMoneyException::class)
+    fun handlerDataNotFound(e: NotEnoughMoneyException): ResponseEntity<*> {
+        return ResponseEntity.badRequest()
+            .body(BaseMessage(0, "Not enough money in balance. User - : ${e.user.username}"))
+    }
+
 }
 
 
@@ -47,143 +64,41 @@ class UserController(private val userService: UserService) {
 class CategoryController(private val categoryService: CategoryService) {
 
     @PostMapping
-    fun createCategory(@RequestBody dto: CategoryDto): ResponseEntity<CategoryDto> {
-        val createdCategory = categoryService.createCategory(dto)
-        return ResponseEntity.ok(createdCategory)
-    }
+    fun createCategory(@RequestBody dto: CategoryCreateDto) = categoryService.createCategory(dto)
 
     @GetMapping("{id}")
-    fun getCategoryById(@PathVariable id: Long): ResponseEntity<CategoryDto> {
-        val category = categoryService.getCategoryById(id)
-        return ResponseEntity.ok(category)
-    }
+    fun getUserById(@PathVariable id: Long) = categoryService.getCategoryById(id)
 
-    @PutMapping("{id}")
-    fun updateCategory(@PathVariable id: Long, @RequestBody dto: CategoryDto): ResponseEntity<CategoryDto> {
-        val updatedCategory = categoryService.updateCategory(id, dto)
-        return ResponseEntity.ok(updatedCategory)
-    }
+    @PutMapping("{key}")
+    fun updateUser(@PathVariable("key") id: Long, @RequestBody dto: CategoryUpdateDto) =
+        categoryService.updateCategory(id, dto)
 
     @DeleteMapping("{id}")
-    fun deleteCategory(@PathVariable id: Long): ResponseEntity<Unit> {
-        categoryService.deleteCategory(id)
-        return ResponseEntity.noContent().build()
-    }
+    fun deleteUser(@PathVariable id: Long) = categoryService.deleteCategory(id)
 
     @GetMapping
-    fun getAllCategories(pageable: Pageable): ResponseEntity<Page<CategoryDto>> {
-        val categories = categoryService.getAllCategories(pageable)
-        return ResponseEntity.ok(categories)
-    }
+    fun getAllUsers(pageable: Pageable) = categoryService.getAllCategories(pageable)
 }
-
 
 @RestController
 @RequestMapping("api/v1/product")
 class ProductController(private val productService: ProductService) {
 
     @PostMapping
-    fun createProduct(@RequestBody dto: ProductDto): ResponseEntity<ProductDto> {
-        val createdProduct = productService.createProduct(dto)
-        return ResponseEntity.ok(createdProduct)
-    }
+    fun createProduct(@RequestBody dto: ProductCreateDto) = productService.createProduct(dto)
 
     @PutMapping("{id}")
-    fun updateProduct(@PathVariable id: Long, @RequestBody dto: ProductDto): ResponseEntity<ProductDto> {
-        val updatedProduct = productService.updateProduct(id, dto)
-        return ResponseEntity.ok(updatedProduct)
-    }
+    fun updateProduct(@PathVariable id: Long, @RequestBody dto: ProductUpdateDto) =
+        productService.updateProduct(id, dto)
 
     @DeleteMapping("{id}")
-    fun deleteProduct(@PathVariable id: Long): ResponseEntity<Unit> {
-        productService.deleteProduct(id)
-        return ResponseEntity.noContent().build()
-    }
+    fun deleteProduct(@PathVariable id: Long) = productService.deleteProduct(id)
 
     @GetMapping("{id}")
-    fun getProductById(@PathVariable id: Long): ResponseEntity<ProductDto> {
-        val product = productService.getProductById(id)
-        return ResponseEntity.ok(product)
-    }
+    fun getProductById(@PathVariable id: Long) = productService.getProductById(id)
 
     @GetMapping
-    fun getAllProducts(pageable: Pageable): ResponseEntity<Page<ProductDto>> {
-        val products = productService.getAllProducts(pageable)
-        return ResponseEntity.ok(products)
-    }
-}
-
-@RestController
-@RequestMapping("api/v1/transaction")
-class TransactionController(private val transactionService: TransactionService) {
-
-    @PostMapping
-    fun createTransaction(@RequestBody dto: TransactionDto): ResponseEntity<TransactionDto> {
-        val createdTransaction = transactionService.createTransaction(dto)
-        return ResponseEntity.ok(createdTransaction)
-    }
-
-    @PutMapping("{id}")
-    fun updateTransaction(@PathVariable id: Long, @RequestBody dto: TransactionDto): ResponseEntity<TransactionDto> {
-        val updatedTransaction = transactionService.updateTransaction(id, dto)
-        return ResponseEntity.ok(updatedTransaction)
-    }
-
-    @DeleteMapping("{id}")
-    fun deleteTransaction(@PathVariable id: Long): ResponseEntity<Unit> {
-        transactionService.deleteTransaction(id)
-        return ResponseEntity.noContent().build()
-    }
-
-    @GetMapping("{id}")
-    fun getTransactionById(@PathVariable id: Long): ResponseEntity<TransactionDto> {
-        val transaction = transactionService.getTransactionById(id)
-        return ResponseEntity.ok(transaction)
-    }
-
-    @GetMapping
-    fun getAllTransactions(pageable: Pageable): ResponseEntity<Page<TransactionDto>> {
-        val transactions = transactionService.getAllTransactions(pageable)
-        return ResponseEntity.ok(transactions)
-    }
-}
-
-@RestController
-@RequestMapping("api/v1/transaction-item")
-class TransactionItemController(private val transactionItemService: TransactionItemService) {
-
-    @PostMapping
-    fun createTransactionItem(@RequestBody dto: TransactionItemDto): ResponseEntity<TransactionItemDto> {
-        val createdTransactionItem = transactionItemService.createTransactionItem(dto)
-        return ResponseEntity.ok(createdTransactionItem)
-    }
-
-    @PutMapping("{id}")
-    fun updateTransactionItem(
-        @PathVariable id: Long,
-        @RequestBody dto: TransactionItemDto
-    ): ResponseEntity<TransactionItemDto> {
-        val updatedTransactionItem = transactionItemService.updateTransactionItem(id, dto)
-        return ResponseEntity.ok(updatedTransactionItem)
-    }
-
-    @DeleteMapping("{id}")
-    fun deleteTransactionItem(@PathVariable id: Long): ResponseEntity<Unit> {
-        transactionItemService.deleteTransactionItem(id)
-        return ResponseEntity.noContent().build()
-    }
-
-    @GetMapping("{id}")
-    fun getTransactionItemById(@PathVariable id: Long): ResponseEntity<TransactionItemDto> {
-        val transactionItem = transactionItemService.getTransactionItemById(id)
-        return ResponseEntity.ok(transactionItem)
-    }
-
-    @GetMapping
-    fun getAllTransactionItems(pageable: Pageable): ResponseEntity<Page<TransactionItemDto>> {
-        val transactionItems = transactionItemService.getAllTransactionItems(pageable)
-        return ResponseEntity.ok(transactionItems)
-    }
+    fun getAllProducts(pageable: Pageable) = productService.getAllProducts(pageable)
 }
 
 @RestController
@@ -191,35 +106,26 @@ class TransactionItemController(private val transactionItemService: TransactionI
 class UserPaymentTransactionController(private val userPaymentTransactionService: UserPaymentTransactionService) {
 
     @PostMapping
-    fun createUserPaymentTransaction(@RequestBody dto: UserPaymentTransactionDto): ResponseEntity<UserPaymentTransactionDto> {
-        val createdUserPaymentTransaction = userPaymentTransactionService.createUserPaymentTransaction(dto)
-        return ResponseEntity.ok(createdUserPaymentTransaction)
-    }
-
-    @PutMapping("{id}")
-    fun updateUserPaymentTransaction(
-        @PathVariable id: Long,
-        @RequestBody dto: UserPaymentTransactionDto
-    ): ResponseEntity<UserPaymentTransactionDto> {
-        val updatedUserPaymentTransaction = userPaymentTransactionService.updateUserPaymentTransaction(id, dto)
-        return ResponseEntity.ok(updatedUserPaymentTransaction)
-    }
-
-    @DeleteMapping("{id}")
-    fun deleteUserPaymentTransaction(@PathVariable id: Long): ResponseEntity<Unit> {
-        userPaymentTransactionService.deleteUserPaymentTransaction(id)
-        return ResponseEntity.noContent().build()
-    }
-
-    @GetMapping("{id}")
-    fun getUserPaymentTransactionById(@PathVariable id: Long): ResponseEntity<UserPaymentTransactionDto> {
-        val userPaymentTransaction = userPaymentTransactionService.getUserPaymentTransactionById(id)
-        return ResponseEntity.ok(userPaymentTransaction)
-    }
+    fun createUserPaymentTransaction(@RequestBody dto: UserPaymentTransactionCreateDto) =
+        userPaymentTransactionService.createUserPaymentTransaction(dto)
 
     @GetMapping
-    fun getAllUserPaymentTransactions(pageable: Pageable): ResponseEntity<Page<UserPaymentTransactionDto>> {
-        val userPaymentTransactions = userPaymentTransactionService.getAllUserPaymentTransactions(pageable)
-        return ResponseEntity.ok(userPaymentTransactions)
-    }
+    fun getAllUserPaymentTransactions(pageable: Pageable) =
+        userPaymentTransactionService.getAllUserPaymentTransactions(pageable)
+}
+
+
+@RestController
+@RequestMapping("api/v1/market")
+class MarketController(
+    private val transactionService: TransactionService,
+    private val transactionItemService: TransactionItemService,
+) {
+
+    @PostMapping
+    fun buyProduct(@RequestBody dto: TransactionCreateDto): TransactionDto =
+        transactionService.createProductTransaction(dto)
+
+    @GetMapping("transaction-history/{userId}")
+    fun getTransactionHistory(@PathVariable userId: Long) = transactionItemService.getTransactionByUserId(userId)
 }
