@@ -2,8 +2,6 @@ package uz.imv.lesson4
 
 import jakarta.persistence.*
 import java.math.BigDecimal
-import java.sql.Timestamp
-import java.text.DateFormat
 import java.time.LocalDateTime
 
 @Entity

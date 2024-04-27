@@ -1,12 +1,7 @@
 package uz.imv.lesson4
 
-import jakarta.persistence.Column
-import jakarta.persistence.ManyToOne
 import java.math.BigDecimal
-import java.sql.Timestamp
-import java.text.DateFormat
 import java.time.LocalDateTime
-import java.util.*
 
 data class BaseMessage(val code: Int, val message: String)
 

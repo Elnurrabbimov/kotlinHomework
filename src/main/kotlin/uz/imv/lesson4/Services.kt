@@ -5,8 +5,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import java.sql.Timestamp
-import java.text.DateFormat
 import java.time.LocalDateTime
 
 interface UserService {
