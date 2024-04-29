@@ -214,7 +214,6 @@ class TransactionItemServiceImpl(private val repository: TransactionItemReposito
         val data = repository.findAllByIdUserId(userId)
         return data.map { TransactionItemDto.toDto(it) }
     }
-
 }
 
 interface TransactionService {
@@ -233,45 +232,42 @@ class TransactionServiceImpl(
     override fun createProductTransaction(dto: TransactionCreateDto): TransactionDto {
         val user = userRepository.findByIdOrNull(dto.userId.toLong()) ?: throw DataNotFoundException("user")
 
-        var total_amount = 0.0.toBigDecimal()
+        var totalAmount = 0.0.toBigDecimal()
 
-        var transaction = repository.save(dto.toEntity(user, total_amount, LocalDateTime.now()))
+        var transaction = repository.save(dto.toEntity(user, totalAmount, LocalDateTime.now()))
 
         for (product in dto.products) {
             val productEntity =
                 productRepository.findByIdOrNull(product.productId.toLong()) ?: throw DataNotFoundException("product")
 
-            if (productEntity.count - product.count > 0) {
-                var total_amount_item = product.amount.multiply(product.count.toBigDecimal())
-                total_amount += total_amount_item
-
-                product.count.let {
-                    productEntity.count -= it
-                }
-                productRepository.save(productEntity)
-
-                var transactionItem = TransactionItemCreateDto(product.productId, product.count, product.amount)
-                transactionItemRepository.save(transactionItem.toEntity(productEntity, transaction, total_amount_item))
-            } else {
+            if (productEntity.count - product.count < 0)
                 throw NotEnoughProductException(productEntity)
+
+            val totalAmountItem = product.amount.multiply(product.count.toBigDecimal())
+            totalAmount += totalAmountItem
+
+            product.count.let {
+                productEntity.count -= it
             }
+            productRepository.save(productEntity)
+
+            val transactionItem = TransactionItemCreateDto(product.productId, product.count, product.amount)
+            transactionItemRepository.save(transactionItem.toEntity(productEntity, transaction, totalAmountItem))
+
         }
 
 
-        total_amount.let {
+        totalAmount.let {
             transaction.total_amount = it
         }
 
-        if (user.banalce - total_amount < 0.toBigDecimal())
+        if (user.banalce - totalAmount < 0.toBigDecimal())
             throw NotEnoughMoneyException(user)
-        else {
-            total_amount.let {
-                user.banalce -= it
-            }
 
-            userRepository.save(user)
+        totalAmount.let {
+            user.banalce -= it
         }
-
+        userRepository.save(user)
 
         transaction = repository.save(transaction)
 
